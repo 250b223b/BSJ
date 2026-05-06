@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ブルシットジョブシミュレーター</title>
+<title>中間管理職のマネジメント実践シミュレーターw</title>
 <style>
 :root {
   --bg:#080808; --bg2:#101010; --bg3:#181818;
@@ -371,26 +371,10 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 <!-- ═══════════════════ TITLE ═══════════════════ -->
 <div id="title-screen" class="screen active">
   <div class="label-tiny">Bullshit Job Simulator</div>
-  
   <div class="yt-container" id="yt-opening">
-    <iframe width="560" height="315" 
-  src="https://www.youtube.com/embed/9r8OlFXk92k" 
-  frameborder="0" 
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-　　</iframe>
+    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/9r8OlFXk92k" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
   </div>
-  /* 動画コンテナの下に余裕を持たせる */
-.yt-container {
-    margin-bottom: 30px; /* ここの数値を大きくすると隙間が広がります */
-    display: block;      /* 確実にブロックとして扱う */
-}
-
-/* タイトルの上にも少し余白を追加 */
-.title-h1 {
-    margin-top: 20px;
-    line-height: 1.4;    /* 文字が重ならないように行間も調整 */
-}
-  <h1 class="title-h1">ブルシットジョブ シミュレーター</h1>
+  <h1 class="title-h1">Bullshit Job Simulator</h1>
   <div class="title-sub">MIDDLE MANAGEMENT EXPERIENCE — AUTHENTIC SUFFERING GUARANTEED</div>
   <p class="title-desc">
     あなたは今日も「中間管理職」として出勤します。<br>
@@ -398,7 +382,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <br>
     キラキラしたバズワードで飾られた仕事を振るほど、<br>
     上層部の評価は上がります。<br>
-    しかし、裏で部下は静かに疲弊していきます。<br>
+    しかし、裏で部下は静かに死んでいきます。<br>
     <br>
     あなたはいつまで耐えられますか？<br>
     そして、あなたはどちら側の人間ですか？
@@ -726,6 +710,9 @@ const GLITCH_CHARS = "アアアアアア働きたくない助けてもう限界�
 let G = {};
 let _glitchTimer = null;
 let _cutinTimeout = null;
+
+// GAS Configuration (User needs to set this URL)
+const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyZcFpqxauGtlCPCg9pZBvcz-wU0F7dK3kZQTG6mH1BuvSKUD7ShuJnuqqLHlegd9Gu3Q/exec"; // ここにGASのウェブアプリURLを貼り付けてください
 
 function newState() {
   return {
@@ -1255,25 +1242,83 @@ function triggerStampEffect() {
   }
 }
 
-function buildDistributionChart(containerId) {
+async function sendScoreToGAS() {
+  if(!GAS_WEBAPP_URL) return;
+  const data = {
+    sessionID: "GA-" + Math.floor(Math.random() * 1000000000),
+    bsj: G.bsj,
+    loyalty: G.loyalty,
+    vitality: G.vitality,
+    burnout: G.burnout,
+    stage: G.stage + 1,
+    timestamp: new Date().toISOString()
+  };
+  try {
+    await fetch(GAS_WEBAPP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    addLog('📊 統計データを送信しました。','sys');
+  } catch(e) {
+    console.error("GAS Error:", e);
+  }
+}
+
+async function fetchStatsFromGAS() {
+  if(!GAS_WEBAPP_URL) return null;
+  try {
+    const res = await fetch(GAS_WEBAPP_URL);
+    return await res.json();
+  } catch(e) {
+    console.error("GAS Fetch Error:", e);
+    return null;
+  }
+}
+
+async function buildDistributionChart(containerId) {
   const container = document.getElementById(containerId);
   if(!container) return;
+  
   const bsj = G.bsj;
+  let stats = await fetchStatsFromGAS();
+  
+  // Fallback to dummy if no GAS or error
+  if(!stats || !stats.allBSJ || stats.allBSJ.length === 0) {
+    stats = {
+      allBSJ: [10, 20, 45, 80, 100, 70, 40, 25, 15, 8, 4, 2],
+      totalCount: 419,
+      avgBSJ: 142
+    };
+  }
+
+  // Calculate real distribution
+  const bins = new Array(12).fill(0);
+  let userRank = 1;
+  stats.allBSJ.forEach(val => {
+    const idx = Math.min(Math.floor(val / 25), 11);
+    bins[idx]++;
+    if(val > bsj) userRank++;
+  });
+  
+  const percentile = Math.max(1, Math.round((userRank / (stats.allBSJ.length || 1)) * 100));
   let level = "一般社員";
-  let percentile = "上位 40%";
-  
-  if(bsj > 250) { level = "破壊神"; percentile = "上位 1%"; }
-  else if(bsj > 180) { level = "組織の癌"; percentile = "上位 5%"; }
-  else if(bsj > 120) { level = "BSJ量産機"; percentile = "上位 15%"; }
-  
+  if(percentile <= 1) level = "破壊神";
+  else if(percentile <= 5) level = "組織の癌";
+  else if(percentile <= 15) level = "BSJ量産機";
+  else if(percentile <= 30) level = "エース社畜";
+
   let html = `<div style="font-size:12px; color:var(--amber); margin-bottom:10px; text-align:center;">
-    【日本企業の平均との比較】<br>
-    あなたの組織腐敗度は、${percentile}の『${level}』レベルです
+    【日本企業の平均（全プレイヤー統計）との比較】<br>
+    あなたの組織腐敗度は、上位${percentile}%の『${level}』レベルです<br>
+    <span style="font-size:9px; color:var(--dim)">（総回答数: ${stats.allBSJ.length || stats.totalCount}件）</span>
   </div>
   <div class="dist-chart-wrap">`;
   
+  const maxBin = Math.max(...bins);
   for(let i=0; i<12; i++) {
-    const h = [10, 20, 45, 80, 100, 70, 40, 25, 15, 8, 4, 2][i];
+    const h = (bins[i] / (maxBin || 1)) * 100;
     const isUser = (bsj > 250 && i === 11) || (bsj <= 250 && Math.floor(bsj/25) === i);
     html += `<div class="dist-bar ${isUser?'highlight':''}" style="left:${i*8.5}%; height:${h}%;">
       ${isUser?'<div class="dist-label">YOU</div>':''}
@@ -1410,6 +1455,7 @@ function triggerGekokujo() {
 function triggerGameOver(){
   stopGlitch();
   document.getElementById('burnout-overlay').classList.remove('active');
+  sendScoreToGAS();
 
   const endKey=getGameOverEnding();
   const end=ENDINGS[endKey];
@@ -1437,6 +1483,7 @@ function triggerGameOver(){
 function showResult(){
   stopGlitch();
   document.getElementById('burnout-overlay').classList.remove('active');
+  sendScoreToGAS();
 
   const endKey=getEnding();
   const end=ENDINGS[endKey];
