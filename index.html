@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中間管理職のマネジメント実践シミュレーターw</title>
+<style>
+:root {
+  --bg:#080808; --bg2:#101010; --bg3:#181818;
+  --border:#222; --border2:#2a2a2a;
+  --text:#b8b8b0; --dim:#505048; --bright:#e8e8e0;
+  --green:#00e676; --red:#ff3d3d; --amber:#ffb300;
+  --blue:#4488ff; --bsj:#c8ff00; --purple:#bb88ff;
+  --stamp-red: rgba(255, 0, 0, 0.7);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background-color:var(--bg);background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:28px 28px;color:var(--text);font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo","MS Gothic",sans-serif;font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:9999;}
+
+/* ── OVERLAYS ── */
+#burnout-overlay{position:fixed;inset:0;pointer-events:none;z-index:9998;display:none;}
+#burnout-overlay.active{display:block;animation:flash-red .7s infinite;}
+@keyframes flash-red{0%,60%,100%{background:rgba(255,0,0,0)}30%{background:rgba(255,0,0,.06)}85%{background:rgba(255,0,0,.12)}}
+
+/* ── NEW EFFECTS ── */
+.shake { animation: shake-anim 0.2s infinite; }
+@keyframes shake-anim {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(5px,5px); }
+  50% { transform: translate(-5px,0); }
+  75% { transform: translate(0,-5px); }
+  100% { transform: translate(0,0); }
+}
+
+.stamp {
+  position: fixed;
+  z-index: 9000;
+  pointer-events: none;
+  border: 4px solid var(--stamp-red);
+  color: var(--stamp-red);
+  padding: 10px 20px;
+  font-weight: 900;
+  font-size: 24px;
+  transform: rotate(-20deg);
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255,0,0,0.3);
+  animation: stamp-in 0.1s ease-out forwards;
+}
+@keyframes stamp-in {
+  0% { transform: scale(3) rotate(-40deg); opacity: 0; }
+  100% { transform: scale(1) rotate(-20deg); opacity: 1; }
+}
+
+#patrol-lamp {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997;
+  display: none;
+  box-shadow: inset 0 0 100px rgba(255,0,0,0.5);
+}
+#patrol-lamp.active {
+  display: block;
+  animation: patrol-anim 1s linear infinite;
+}
+@keyframes patrol-anim {
+  0% { background: linear-gradient(90deg, rgba(255,0,0,0.2) 0%, transparent 50%, rgba(255,0,0,0.2) 100%); }
+  50% { background: linear-gradient(90deg, transparent 0%, rgba(255,0,0,0.4) 50%, transparent 100%); }
+  100% { background: linear-gradient(90deg, rgba(255,0,0,0.2) 0%, transparent 50%, rgba(255,0,0,0.2) 100%); }
+}
+
+.heartbeat {
+  animation: heartbeat-anim 1.2s ease-in-out infinite;
+}
+@keyframes heartbeat-anim {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  10% { transform: scale(1.02); filter: brightness(1.2); }
+  20% { transform: scale(1); filter: brightness(1); }
+}
+
+/* YouTube Container */
+.yt-container {
+  width: 100%;
+  max-width: 450px;
+  aspect-ratio: 16/9;
+  margin-bottom: 20px;
+  background: #000;
+  border: 1px solid var(--border2);
+}
+
+/* Comparison Graph */
+.dist-chart-wrap {
+  width: 100%;
+  max-width: 500px;
+  height: 150px;
+  margin: 20px 0;
+  position: relative;
+  border-bottom: 2px solid var(--dim);
+}
+.dist-bar {
+  position: absolute;
+  bottom: 0;
+  background: var(--border2);
+  width: 8%;
+}
+.dist-bar.highlight {
+  background: var(--bsj);
+  box-shadow: 0 0 10px var(--bsj);
+}
+.dist-label {
+  position: absolute;
+  top: -25px;
+  font-size: 10px;
+  color: var(--bsj);
+  white-space: nowrap;
+}
+
+/* Resignation Letter */
+.resignation-letter {
+  background: #fff;
+  color: #333;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px 0;
+  font-family: "Sawarabi Mincho", "Yu Mincho", serif;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  text-align: left;
+  position: relative;
+}
+.resignation-letter h2 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 30px;
+  letter-spacing: 10px;
+}
+.resignation-letter .date { text-align: right; margin-bottom: 20px; }
+.resignation-letter .reason { line-height: 2; margin-bottom: 40px; }
+.resignation-letter .footer { text-align: right; }
+
+
+.cutin-box{position:fixed;top:0;left:0;right:0;z-index:8100;background:linear-gradient(135deg,#1a0800,#0d0005);border-bottom:2px solid var(--amber);padding:12px 22px;display:flex;align-items:center;gap:16px;transform:translateY(-120%);transition:transform .32s cubic-bezier(.22,1,.36,1);pointer-events:none;}
+.cutin-box.show{transform:translateY(0);}
+.cutin-name{font-size:9px;letter-spacing:3px;color:var(--amber);flex-shrink:0;border-right:1px solid var(--border2);padding-right:14px;}
+.cutin-quote{font-size:13px;color:var(--bright);font-weight:bold;line-height:1.5;flex:1;}
+.cutin-badge{flex-shrink:0;font-size:8px;color:var(--dim);letter-spacing:2px;border:1px solid var(--border2);padding:2px 8px;}
+
+.modal-overlay{position:fixed;inset:0;z-index:7200;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg2);border:1px solid var(--border2);padding:28px 32px;max-width:520px;width:100%;}
+.modal-wide{max-width:680px;}
+.modal-badge{font-size:8px;letter-spacing:3px;color:var(--amber);margin-bottom:14px;text-transform:uppercase;}
+.modal-h{font-size:19px;font-weight:900;color:var(--bright);margin-bottom:9px;line-height:1.3;}
+.modal-p{font-size:12px;color:var(--text);line-height:2;margin-bottom:20px;white-space:pre-line;}
+.modal-btns{display:flex;flex-direction:column;gap:8px;}
+.modal-btn{padding:13px 18px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit;font-size:12px;cursor:pointer;text-align:left;line-height:1.6;transition:all .14s;}
+.modal-btn:hover{border-color:var(--blue);background:#0a1520;color:var(--bright);}
+.modal-btn .mb-stat{font-size:9px;color:var(--dim);margin-top:3px;font-family:monospace;}
+.skill-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.skill-card{padding:15px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;transition:all .14s;text-align:center;}
+.skill-card:hover:not(.acquired){border-color:var(--green);background:#051505;}
+.skill-card.acquired{border-color:var(--dim);opacity:.45;cursor:default;}
+.sc-icon{font-size:22px;margin-bottom:8px;}
+.sc-name{font-size:11px;color:var(--bright);font-weight:bold;margin-bottom:5px;}
+.sc-desc{font-size:9px;color:var(--dim);line-height:1.6;}
+
+/* ── SCREENS ── */
+.screen{display:none;}
+#title-screen.active,#intro-screen.active,#gameover-screen.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;}
+#gameover-screen.active{background:#040000;}
+#result-screen.active{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:40px 20px;}
+#game-screen.active{display:block;}
+
+/* ── COMMON ── */
+.label-tiny{font-size:9px;letter-spacing:4px;color:var(--dim);text-transform:uppercase;margin-bottom:20px;}
+.btn{padding:12px 34px;font-family:inherit;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;border:none;transition:all .15s;display:inline-block;}
+.btn-primary{background:var(--bright);color:#000;}
+.btn-primary:hover{background:var(--green);}
+.btn-ghost{background:transparent;color:var(--dim);border:1px solid var(--border2);}
+.btn-ghost:hover{border-color:var(--text);color:var(--text);}
+
+/* ── TITLE ── */
+.title-h1{font-size:clamp(20px,3.5vw,36px);font-weight:900;color:var(--bright);line-height:1.25;margin-bottom:6px;text-align:center;}
+.title-sub{font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:32px;text-align:center;}
+.title-desc{max-width:450px;font-size:12px;color:#777;line-height:2.2;border-left:2px solid var(--border2);padding-left:18px;margin-bottom:40px;}
+.title-note{font-size:9px;color:#444;margin-top:14px;letter-spacing:1px;}
+
+/* ── INTRO ── */
+.boss-card{max-width:500px;width:100%;border:1px solid var(--border2);background:var(--bg2);padding:28px;margin:18px 0;text-align:left;}
+.boss-stage-tag{font-size:9px;letter-spacing:3px;color:var(--amber);margin-bottom:10px;}
+.boss-name{font-size:26px;font-weight:900;color:var(--bright);margin-bottom:4px;}
+.boss-title{font-size:10px;color:var(--dim);padding-bottom:15px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.boss-desc{font-size:12px;color:var(--text);line-height:2.1;}
+.intro-hint{font-size:10px;color:var(--dim);margin-bottom:18px;text-align:center;}
+
+/* ── GAME LAYOUT ── */
+.game-layout{display:flex;gap:12px;max-width:1110px;margin:0 auto;padding:14px 16px;align-items:flex-start;}
+.game-sidebar{width:190px;flex-shrink:0;position:sticky;top:14px;display:flex;flex-direction:column;gap:9px;}
+.sb-section{background:var(--bg2);border:1px solid var(--border);padding:11px 13px;}
+.sb-label{font-size:7px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:9px;border-bottom:1px solid var(--border);padding-bottom:5px;}
+.smi{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);}
+.smi:last-child{border-bottom:none;padding-bottom:0;}
+.smi-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px;border:1px solid var(--border2);}
+.smi-dot.done{background:var(--dim);border-color:var(--dim);}
+.smi-dot.cur{background:var(--amber);border-color:var(--amber);box-shadow:0 0 6px var(--amber);}
+.smi-dot.lock{background:transparent;border-color:var(--border2);}
+.smi-info{flex:1;min-width:0;}
+.smi-stage{font-size:7px;color:var(--dim);letter-spacing:2px;}
+.smi-name{font-size:10px;color:var(--text);font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.smi-turn{font-size:8px;font-family:monospace;color:var(--dim);}
+.sb-turn-row{display:flex;gap:5px;flex-wrap:wrap;}
+.sb-tdot{width:9px;height:9px;border-radius:50%;background:var(--border2);transition:all .3s;flex-shrink:0;}
+.sb-tdot.done{background:var(--dim);}
+.sb-tdot.cur{background:var(--amber);box-shadow:0 0 5px var(--amber);}
+.sb-tdot.bad{background:var(--red);}
+.spark-legend{display:flex;gap:8px;margin-top:5px;font-size:8px;color:var(--dim);}
+.skill-slot{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);}
+.skill-slot:last-child{border-bottom:none;}
+.ss-icon{font-size:13px;opacity:.3;}
+.ss-icon.on{opacity:1;}
+.ss-name{font-size:9px;color:var(--dim);flex:1;}
+.ss-name.on{color:var(--green);}
+.ss-check{font-size:9px;color:var(--green);}
+
+.game-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px;}
+.game-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:9px;border-bottom:1px solid var(--border);}
+.g-title{font-size:9px;letter-spacing:3px;color:var(--dim);}
+.g-stage-badge{font-size:9px;padding:3px 9px;border:1px solid var(--border2);color:var(--amber);letter-spacing:2px;}
+
+.status-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);}
+.stat-item{display:flex;flex-direction:column;gap:4px;}
+.stat-label{font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.stat-bar-wrap{height:4px;background:var(--bg3);overflow:hidden;}
+.stat-bar{height:100%;transition:width .5s ease,background .5s ease;}
+.stat-val{font-size:10px;font-family:"Courier New",monospace;}
+.bsj-row{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding-top:8px;border-top:1px solid var(--border);font-size:8px;color:var(--dim);}
+.bsj-num{font-family:"Courier New",monospace;font-size:15px;font-weight:bold;color:var(--bsj);transition:transform .2s;}
+.bsj-num.bump{transform:scale(1.4);}
+
+.cmd-panel{padding:11px 15px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--amber);}
+.cmd-who{font-size:8px;color:var(--amber);letter-spacing:2px;margin-bottom:5px;}
+.cmd-text{font-size:12px;color:var(--bright);line-height:1.9;}
+.event-badge{display:inline-block;font-size:8px;padding:2px 7px;background:#1a0800;border:1px solid var(--amber);color:var(--amber);margin-bottom:6px;letter-spacing:2px;}
+
+.jobs-label{font-size:7px;letter-spacing:2px;color:var(--dim);}
+.jobs-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.job-card{padding:11px 12px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;transition:border-color .12s,background .12s;text-align:left;}
+.job-card:hover:not(.disabled){border-color:var(--blue);background:#0d1520;}
+.job-card.selected{border-color:var(--blue);background:#0a1525;}
+.job-card.disabled{cursor:default;}
+.job-card.interrupt-job{border-color:#330a00!important;background:#150500!important;}
+.job-card.interrupt-job:hover:not(.disabled){border-color:var(--amber)!important;background:#1a0800!important;}
+.job-card.rev-bsj{border-color:var(--red);animation:pop-red .4s ease;}
+.job-card.rev-good{border-color:var(--green);animation:pop-green .4s ease;}
+@keyframes pop-red{0%{box-shadow:0 0 0 0 rgba(255,61,61,.5)}60%{box-shadow:0 0 0 10px rgba(255,61,61,0)}100%{box-shadow:none}}
+@keyframes pop-green{0%{box-shadow:0 0 0 0 rgba(0,230,118,.5)}60%{box-shadow:0 0 0 10px rgba(0,230,118,0)}100%{box-shadow:none}}
+.job-idx{font-size:7px;color:var(--dim);margin-bottom:3px;font-family:monospace;}
+.job-label{font-size:11px;color:var(--text);line-height:1.6;}
+.job-label.glitch{color:var(--red);}
+.job-interrupt-tag{font-size:8px;color:var(--amber);margin-bottom:3px;letter-spacing:1px;}
+.job-stats{display:none;margin-top:7px;gap:4px;flex-wrap:wrap;}
+.job-stats.show{display:flex;}
+.jstat{padding:2px 5px;font-size:8px;font-family:"Courier New",monospace;border:1px solid;}
+.js-pos{background:#0a200a;color:var(--green);border-color:#1a4a1a;}
+.js-neg{background:#200a0a;color:var(--red);border-color:#4a1a1a;}
+.js-bsj{background:#1c1f00;color:var(--bsj);border-color:#3a3f00;}
+
+.action-row{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);flex-wrap:wrap;}
+.sacrifice-wrap{display:flex;align-items:center;gap:7px;flex:1;cursor:pointer;user-select:none;}
+.sacrifice-wrap input[type=checkbox]{accent-color:var(--amber);width:13px;height:13px;cursor:pointer;}
+.sacrifice-main{font-size:11px;color:var(--text);}
+.sacrifice-hint{font-size:9px;color:var(--dim);}
+#confirm-btn{padding:9px 20px;background:var(--blue);color:#fff;border:none;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .15s;opacity:.35;pointer-events:none;}
+#confirm-btn.ready{opacity:1;pointer-events:all;}
+#confirm-btn.ready:hover{filter:brightness(1.25);}
+#next-btn{display:none;padding:9px 20px;background:var(--bg3);color:var(--dim);border:1px solid var(--border2);font-family:inherit;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all .15s;}
+#next-btn:hover{border-color:var(--text);color:var(--text);}
+
+.log-panel{display:flex;flex-direction:column;border:1px solid var(--border);background:var(--bg2);}
+.log-head{padding:5px 11px;border-bottom:1px solid var(--border);font-size:7px;letter-spacing:3px;color:var(--dim);background:var(--bg3);}
+.log-body{overflow-y:auto;max-height:120px;padding:7px 11px;font-family:"Courier New",monospace;font-size:10px;line-height:1.9;}
+.log-row{display:flex;gap:6px;opacity:0;animation:fadein .3s forwards;}
+.log-ts{color:var(--dim);flex-shrink:0;font-size:8px;}
+.lt-sys{color:var(--dim);}
+.lt-bos{color:var(--amber);}
+.lt-res{color:var(--blue);}
+.lt-warn{color:var(--red);}
+.lt-good{color:var(--green);}
+.lt-sar{color:#666;font-style:italic;}
+.lt-scold{color:var(--red);font-weight:bold;}
+@keyframes fadein{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── GAMEOVER ── */
+.ending-shogo{font-size:10px;letter-spacing:4px;color:var(--dim);margin-bottom:12px;}
+.go-title{font-size:clamp(16px,2.8vw,26px);font-weight:900;margin-bottom:10px;text-align:center;}
+.go-desc{max-width:430px;color:#777;line-height:2.1;font-size:12px;text-align:center;margin-bottom:22px;white-space:pre-line;}
+.ending-badge{display:inline-block;padding:4px 14px;border:1px solid;font-size:10px;letter-spacing:2px;margin-bottom:28px;}
+
+/* ── RESULT ── */
+.res-shogo-label{font-size:8px;letter-spacing:4px;color:var(--dim);margin-bottom:10px;}
+.res-shogo{font-size:clamp(20px,4vw,38px);font-weight:900;margin-bottom:6px;text-align:center;line-height:1.2;}
+.res-shogo-sub{font-size:11px;color:var(--dim);margin-bottom:24px;text-align:center;}
+.stats-box{max-width:560px;width:100%;border:1px solid var(--border2);background:var(--bg2);padding:18px 22px;margin-bottom:16px;}
+.stats-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;}
+.stats-row:last-child{border-bottom:none;}
+.sr-label{color:var(--dim);}
+.sr-val{font-family:"Courier New",monospace;font-size:14px;font-weight:bold;}
+.verdict-box{max-width:540px;width:100%;font-size:11px;color:var(--dim);line-height:2.2;padding:14px 18px;border-left:3px solid var(--red);margin-bottom:16px;white-space:pre-line;}
+.share-section{max-width:560px;width:100%;margin-bottom:14px;}
+.share-label{font-size:8px;letter-spacing:3px;color:var(--dim);margin-bottom:7px;}
+.share-pre{background:var(--bg3);border:1px solid var(--border);padding:14px;font-family:"Courier New",monospace;font-size:10px;color:var(--text);line-height:1.8;white-space:pre;overflow-x:auto;}
+.share-copy-btn{margin-top:7px;padding:7px 16px;background:transparent;border:1px solid var(--border2);color:var(--dim);font-family:inherit;font-size:10px;cursor:pointer;letter-spacing:2px;transition:all .15s;}
+.share-copy-btn:hover{border-color:var(--blue);color:var(--blue);}
+.share-copy-btn.copied{border-color:var(--green);color:var(--green);}
+.reflection-toggle{max-width:560px;width:100%;margin-bottom:14px;}
+.reflection-btn{width:100%;padding:11px 16px;background:transparent;border:1px solid var(--border2);color:var(--dim);font-family:inherit;font-size:10px;cursor:pointer;letter-spacing:2px;transition:all .15s;text-align:left;}
+.reflection-btn:hover{border-color:var(--purple);color:var(--purple);}
+.reflection-panel{display:none;border:1px solid var(--border2);border-top:none;background:var(--bg2);padding:20px;}
+.reflection-panel.open{display:block;}
+.ref-card{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.ref-card:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.ref-concept{font-size:8px;color:var(--purple);letter-spacing:3px;margin-bottom:5px;}
+.ref-title{font-size:13px;color:var(--bright);font-weight:bold;margin-bottom:8px;}
+.ref-body{font-size:11px;color:var(--text);line-height:2;}
+.ref-source{font-size:8px;color:var(--dim);margin-top:6px;font-style:italic;}
+.credit{font-size:8px;color:#2a2a2a;letter-spacing:2px;margin-top:16px;text-align:center;}
+.credit span{color:#444;}
+
+@media(max-width:700px){
+  .game-layout{flex-direction:column;}
+  .game-sidebar{width:100%;position:static;}
+  .status-panel{grid-template-columns:1fr 1fr;}
+  .jobs-grid{grid-template-columns:1fr;}
+  .skill-cards-grid{grid-template-columns:1fr;}
+  .action-row{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── GLOBAL OVERLAYS ── -->
+<div id="burnout-overlay"></div>
+<div id="patrol-lamp"></div>
+<div class="cutin-box" id="cutin-box">
+  <div class="cutin-name" id="cutin-name"></div>
+  <div class="cutin-quote" id="cutin-quote"></div>
+  <div class="cutin-badge">CUTIN ▶</div>
+</div>
+
+<!-- EVENT MODAL -->
+<div class="modal-overlay" id="event-modal">
+  <div class="modal-box">
+    <div class="modal-badge">⚡ 緊急割り込みイベント</div>
+    <div class="modal-h" id="ev-h"></div>
+    <div class="modal-p" id="ev-p"></div>
+    <div class="modal-btns" id="ev-btns"></div>
+  </div>
+</div>
+
+<!-- SKILL MODAL -->
+<div class="modal-overlay" id="skill-modal">
+  <div class="modal-box modal-wide">
+    <div class="modal-badge">🎓 ステージクリア — 処世術を習得しました</div>
+    <div class="modal-h">スキルを1つ選択してください</div>
+    <div class="modal-p">これがあなたの処世術です。次のステージから適用されます。</div>
+    <div class="skill-cards-grid" id="skill-cards"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TITLE ═══════════════════ -->
+<div id="title-screen" class="screen active">
+  <div class="label-tiny">Bullshit Job Simulator</div>
+  <div class="yt-container" id="yt-opening">
+    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/9r8OlFXk92k" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
+  <h1 class="title-h1">Bullshit Job Simulator</h1>
+  <div class="title-sub">MIDDLE MANAGEMENT EXPERIENCE — AUTHENTIC SUFFERING GUARANTEED</div>
+  <p class="title-desc">
+    あなたは今日も「中間管理職」として出勤します。<br>
+    上層部の曖昧な指令を部下に「翻訳」して振る日々。<br>
+    <br>
+    キラキラしたバズワードで飾られた仕事を振るほど、<br>
+    上層部の評価は上がります。<br>
+    しかし、裏で部下は静かに死んでいきます。<br>
+    <br>
+    あなたはいつまで耐えられますか？<br>
+    そして、あなたはどちら側の人間ですか？
+  </p>
+  <button class="btn btn-primary" onclick="startGame()">入社する（自己責任）</button>
+  <div class="title-note">※ このゲームで登場する人物・組織は架空のものです（たぶん）</div>
+</div>
+
+<!-- ═══════════════════ INTRO ═══════════════════ -->
+<div id="intro-screen" class="screen">
+  <div class="label-tiny" id="intro-stage-label"></div>
+  <div class="boss-card">
+    <div class="boss-stage-tag" id="intro-subtitle"></div>
+    <div class="boss-name" id="intro-name"></div>
+    <div class="boss-title" id="intro-title"></div>
+    <div class="boss-desc" id="intro-desc"></div>
+  </div>
+  <div class="intro-hint" id="intro-hint"></div>
+  <button class="btn btn-primary" onclick="startStage()">承知いたしました（諦めの境地）</button>
+</div>
+
+<!-- ═══════════════════ GAME ═══════════════════ -->
+<div id="game-screen" class="screen">
+  <div class="game-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="game-sidebar">
+      <!-- Stage map -->
+      <div class="sb-section">
+        <div class="sb-label">ステージ進捗</div>
+        <div id="stage-map"></div>
+      </div>
+      <!-- Turn progress -->
+      <div class="sb-section">
+        <div class="sb-label">ターン</div>
+        <div class="sb-turn-row" id="sb-turns"></div>
+        <div style="font-size:8px;color:var(--dim);margin-top:7px;" id="sb-turn-label"></div>
+      </div>
+      <!-- Sparkline -->
+      <div class="sb-section">
+        <div class="sb-label">ステータス推移</div>
+        <svg id="sparkline" viewBox="0 0 170 56" width="170" height="56" style="display:block"></svg>
+        <div class="spark-legend">
+          <span style="color:var(--green)">■</span>LOY
+          <span style="color:var(--blue)">■</span>VIT
+          <span style="color:var(--red)">■</span>BUR
+        </div>
+      </div>
+      <!-- Skills -->
+      <div class="sb-section">
+        <div class="sb-label">習得スキル</div>
+        <div id="skills-panel"></div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="game-main">
+      <div class="game-header">
+        <div class="g-title">BSJ SIMULATOR · <span id="g-stage" style="color:var(--amber)"></span></div>
+        <div class="g-stage-badge" id="g-turn"></div>
+      </div>
+      <div class="status-panel">
+        <div class="stat-item">
+          <div class="stat-label">LOYALTY — 上層部満足度</div>
+          <div class="stat-bar-wrap"><div class="stat-bar" id="bar-loy"></div></div>
+          <div class="stat-val" id="val-loy"></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">VITALITY — 部下の生命力</div>
+          <div class="stat-bar-wrap"><div class="stat-bar" id="bar-vit"></div></div>
+          <div class="stat-val" id="val-vit"></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">BURNOUT — あなたの過労度</div>
+          <div class="stat-bar-wrap"><div class="stat-bar" id="bar-bur"></div></div>
+          <div class="stat-val" id="val-bur"></div>
+        </div>
+        <div class="bsj-row">
+          <span>累積ブルシット・ジョブ指数：</span>
+          <span class="bsj-num" id="val-bsj">0</span>
+          <span style="font-size:8px;color:#444">pt ／ 組織腐敗進行中</span>
+        </div>
+      </div>
+      <div class="cmd-panel">
+        <div class="cmd-who" id="cmd-who"></div>
+        <div id="cmd-event-badge" class="event-badge" style="display:none">⚡ 割り込みタスク強制挿入</div>
+        <div class="cmd-text" id="cmd-text"></div>
+      </div>
+      <div class="jobs-label">▼ 対応策を選択してください（統計値は選択後に開示されます）</div>
+      <div class="jobs-grid" id="jobs-grid"></div>
+      <div class="action-row">
+        <label class="sacrifice-wrap">
+          <input type="checkbox" id="sac-chk" onchange="G.selfSac=this.checked">
+          <div>
+            <div class="sacrifice-main">💀 自分で泥をかぶる</div>
+            <div class="sacrifice-hint">部下の疲弊を肩代わり。ただしBurnoutが急増します。</div>
+          </div>
+        </label>
+        <button id="confirm-btn" onclick="confirmJob()">決　定</button>
+        <button id="next-btn" onclick="nextTurn()">次のご指令へ ›</button>
+      </div>
+      <div class="log-panel">
+        <div class="log-head">SYSTEM LOG ─────────────────────────────────────</div>
+        <div class="log-body" id="log-body"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ GAMEOVER ═══════════════════ -->
+<div id="gameover-screen" class="screen">
+  <div class="ending-shogo" id="go-shogo-label"></div>
+  <div style="font-size:30px;margin-bottom:10px;" id="go-emoji"></div>
+  <div class="go-title" id="go-title"></div>
+  <div class="ending-badge" id="go-badge"></div>
+  <div class="go-desc" id="go-desc"></div>
+  <div class="stats-box" id="go-stats"></div>
+  <div id="go-dist-chart-container"></div>
+  <div id="resignation-container"></div>
+  <button class="btn btn-ghost" onclick="resetGame()" style="margin-bottom:20px;">もう一度働く（絶望）</button>
+  <div class="credit">generated by <span>Claude</span> (Anthropic)</div>
+</div>
+
+<!-- ═══════════════════ RESULT ═══════════════════ -->
+<div id="result-screen" class="screen">
+  <div class="res-shogo-label" id="res-shogo-label"></div>
+  <div style="font-size:36px;margin-bottom:10px;" id="res-emoji"></div>
+  <div class="res-shogo" id="res-shogo"></div>
+  <div class="res-shogo-sub" id="res-shogo-sub"></div>
+  <div class="stats-box" id="res-stats"></div>
+  <div id="dist-chart-container"></div>
+  <div class="verdict-box" id="res-verdict"></div>
+  <div class="share-section">
+    <div class="share-label">📊 SNS戦績カード（コピーして共有）</div>
+    <pre class="share-pre" id="share-pre"></pre>
+    <button class="share-copy-btn" id="copy-btn" onclick="copyShare()">コピーする</button>
+  </div>
+  <div class="reflection-toggle">
+    <button class="reflection-btn" onclick="toggleReflection()">📚 振り返り解説モード（現実の組織論と照合する） ›</button>
+    <div class="reflection-panel" id="reflection-panel"></div>
+  </div>
+  <button class="btn btn-ghost" onclick="resetGame()" style="margin-bottom:20px;">退職してやり直す</button>
+  <div class="credit">generated by <span>Claude</span> (Anthropic)</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════
+
+const STAGES = [
+  {
+    id:0, name:"STAGE 1", subtitle:"初級：正論の暴力",
+    bossName:"田村 剛", bossTitle:"第一事業推進部長",
+    bossDesc:"「それって本当にやる意味あるの？」が口癖。ロジカルシンキングという名の圧力で部下を潰す。会議で指摘された問題を全て「方向性の問題」として棚上げにし、翌月の会議で同じことを言う。正論なので誰も反論できない。彼の机の上には読まれていないピーター・ドラッカーが5冊ある。",
+    hint:"田村部長の指令を処理します。初級とはいえ、油断は禁物です。",
+    cutins:[
+      "それって、本当に意味ある？（ない）",
+      "ロジック、通ってる？（通ってない）",
+      "成果にコミットしてくれてる？（させる側）",
+      "うちのチームに必要なのは主体性だよ（命令しながら）",
+    ],
+    commands:[
+      {text:"「今期こそDXを全社的に加速させる。来週中に具体的なアクションプランをまとめてくれ。それだけだ。以上。」",log:"部長がゴルフ仲間から『DX』という単語を仕入れてきました。意味は現在も検討中です。"},
+      {text:"「チームの生産性を数値で可視化してほしい。全業務KPI化して、ダッシュボードにまとめて月次でレポートしてくれ。細かいことは任せる。」",log:"『細かいことは任せる』は『詳細まで全部やれ』の現代語訳です。"},
+      {text:"「部下のエンゲージメントが低い気がする。しっかりとサーバントリーダーシップを発揮してくれ。数字で出してくれ。」",log:"部長は自分がサーバントリーダーだと確信しています。部下は一度も同意したことがありません。"},
+      {text:"「競合がアジャイル開発を導入したらしい。うちも取り入れてほしい。来月から。予算はゼロで頼む。できるよね？」",log:"部長はアジャイルとウォーターフォールの違いを把握していません。把握する必要があるとも思っていません。"},
+      {text:"「心理的安全性が大事だと思うんだよね。何かいい取り組みをしてくれ。全員参加で。来月の経営会議で発表したい。」",log:"『心理的安全性』は今期の経営方針書の第3ページにありました。部長はそれを読みました（ぱらぱらと）。"},
+    ]
+  },
+  {
+    id:1, name:"STAGE 2", subtitle:"中級：保身の空転",
+    bossName:"黒沢 修一郎", bossTitle:"常務取締役・コーポレート戦略担当 ／ 社歴21年",
+    bossDesc:"在任21年。全ての失敗を部下のせいにする天才。会議での発言は必ず「そこは担当に確認させます」で終わる。責任所在について驚くほど明確なビジョンを持っているが、それは常に他人の責任のみを指す。あなたにとって危険な上司です。正解を選ぶと、報復が来ます。",
+    hint:"⚠ 警告：正しい判断をすると強烈な報復が来ます。心を強く持ってください。",
+    cutins:[
+      "その判断、完全に君の責任な？（後で使う）",
+      "私は全力でサポートするよ（観戦する）",
+      "上は理解してくれてる……よね？（してない）",
+      "そういう姿勢は困るんだよね（困らない、利用するだけ）",
+    ],
+    commands:[
+      {text:"「例のプロジェクト、先方からクレームが来た。そちらで対応してくれ。私もコミットしているから、安心してくれ。」",log:"黒沢常務の『コミット』とは『観戦する』という意味です。語源は不明です。"},
+      {text:"「取締役会でサステナビリティが重要課題として上がった。何かやってくれ。目に見える形で。早めに頼む。」",log:"『目に見える形』＝『私の功績になる形』。この方程式は9年前から成立しています。"},
+      {text:"「Q3レポートだが、もう少し成果が見えないと困る。数字を盛れとは言わないが……わかるよね？やれるよね？」",log:"黒沢常務は『わかるよね？』で全てを伝えます。伝わっても伝わらなくても、責任はあなたです。"},
+      {text:"「君のチームのミスが原因で、先方に報告書を提出することになった。来週月曜までに。うちのミスに見えないように。」",log:"報告書の提出先が監督官庁であることは、まだ言われていません。"},
+      {text:"「人材育成が大事だよな。よし、研修プログラムを一から組んでくれ。社内で完結させて。予算なしで。いつでもいいよ（来月）。」",log:"予算ゼロで人材育成。業界用語で『内製化』と呼びます。"},
+    ]
+  },
+  {
+    id:2, name:"STAGE 3", subtitle:"上級：思いつきの御神託",
+    bossName:"大場 哲也", bossTitle:"代表取締役社長・CEO ／ 創業家三代目",
+    bossDesc:"ダボス会議に一度参加した後、人格が変わった。毎年シリコンバレーへ視察に行き、毎年違う『革命的ビジョン』を持ち帰る。今年の革命は昨年の革命と完全に矛盾しているが、誰も指摘できない。社員の名前を覚える気がない。発言はすべて御神託として受け取られる。",
+    hint:"⚠⚠ 最終ボス。思いつきに法則はありません。ご武運を。",
+    cutins:[
+      "ワクワクしてる！？答えろ！（怖い）",
+      "シリコンバレーではね……（関係ない）",
+      "もっとスピード感！スピード！（根拠なし）",
+      "うちもGAFAになれるよ（なれない）",
+    ],
+    commands:[
+      {text:"「メタバースだ。本社をメタバースに移転しよう。あとのことはよろしく頼む。コンセプトとかは自由でいいよ。あとで見せて。」",log:"社長がシリコンバレーのカンファレンスから帰国しました。毎年恒例の創造的破壊フェーズが始まります。"},
+      {text:"「全社員がNFTアーティストになれば副業問題も解決するし、Web3時代に対応できる。いいと思うんだけど、すぐやってくれ。」",log:"社長は『Web3』が何かを理解していませんが、それが強みだと考えています。"},
+      {text:"「ウェルビーイング経営を実践したい。まず全員でマインドフルネス瞑想を業務時間内に毎朝やれ。効果の報告書も作れ。英語で。」",log:"社長が先週読んだ本：『ウェルビーイングが企業を救う』。読了時間：推定17分（ななめ読み）。"},
+      {text:"「AIで全部解決できるはずだ。全業務をAIに置き換えてほしい。どのAIかって？そこから考えてくれ。できるよね。」",log:"社長は『AIを導入する』と『AIを理解する』を混同しています。こちらが今まさに困っています。"},
+      {text:"「うちの社員、もっとワクワクしてほしいんだよね。ワクワクする制度を作ってくれ。いいのを頼む。任せる。あと来週発表したい。」",log:"『ワクワク』の定義が不明確なまま、あなたの今週末が消えました。"},
+    ]
+  }
+];
+
+const BSJ = [
+  {l:"アジャイルな全社的トランスフォーメーション推進WG立ち上げ及び週次キックオフ会議の設定（全員強制参加・欠席禁止）",loy:15,vit:-18,bsj:28},
+  {l:"心理的安全性を担保するための週次360°フィードバック＋300問ウェルネスアンケートの設計・月次実施・集計・報告書化",loy:12,vit:-22,bsj:30},
+  {l:"DX推進ロードマップ作成と経営報告PowerPoint（目標100ページ、日英両語）の月次更新・全社配信体制構築",loy:10,vit:-20,bsj:24},
+  {l:"ステークホルダーエンゲージメント最大化に向けたバリュープロポジション再定義ワークショップ全社展開（月2回）",loy:14,vit:-20,bsj:26},
+  {l:"KGI・KPI・OKRの整合性確認マトリクス全社展開と月次モニタリング委員会設置・運営規程策定・議事録管理",loy:11,vit:-16,bsj:22},
+  {l:"グローバルスタンダード準拠タレントマネジメント制度設計・導入・全社研修（計40時間）企画から実施まで一括担当",loy:13,vit:-22,bsj:27},
+  {l:"ESG経営実践のためのマテリアリティ分析・サステナビリティレポート作成（日英両語・外部認証取得含む）",loy:15,vit:-24,bsj:31},
+  {l:"ナレッジマネジメント強化のための社内Wikiページ5,000件作成プロジェクト（全員ノルマ：月50件）",loy:8,vit:-26,bsj:33},
+  {l:"組織文化変革チェンジマネジメントプログラム設計・実施計画立案・全社説明会20回開催・効果測定",loy:12,vit:-17,bsj:22},
+  {l:"イノベーションエコシステム構築のためのCVC設立検討・外部連携パートナー200社調査レポート作成（A4 60枚）",loy:16,vit:-14,bsj:20},
+  {l:"デジタルツイン活用による全業務プロセス完全可視化PoC立案・ベンダー選定・ROI試算報告書作成（来週月曜締切）",loy:14,vit:-15,bsj:20},
+  {l:"社員ウェルビーイング向上のための日次ストレスチェック制度設計とパルスサーベイ自動化システム構築・運用",loy:10,vit:-19,bsj:24},
+  {l:"競争優位性強化ブルーオーシャン戦略立案・全社展開シナリオ3パターン作成・取締役会プレゼン用資料制作（英語版含む）",loy:15,vit:-20,bsj:25},
+  {l:"パーパス経営実現に向けた社内MVV再定義ワークショップ全社20回開催・冊子化・全社配布・結果発表会",loy:12,vit:-22,bsj:27},
+  {l:"全社DX人材育成カリキュラム設計・eラーニングシステム選定・コンテンツ制作（目標100モジュール）・受講率管理",loy:13,vit:-20,bsj:25},
+  {l:"アジャイル組織完全移行計画策定・スクラムマスター全員資格取得促進・スプリントレビュー体制構築・効果測定",loy:11,vit:-18,bsj:23},
+  {l:"データドリブン経営実現のための全業務KPI化（目標：社内KPI数1,200個）とBIダッシュボード構築・月次レポート体制",loy:14,vit:-23,bsj:30},
+  {l:"リスキリング推進のための個人別70時間/年学習計画策定・進捗管理・四半期スキルアセスメント実施・結果可視化",loy:10,vit:-20,bsj:25},
+  {l:"メタバース本社開設準備委員会設置・ベンダー選定・VRデバイス全社調達・社内メタバースガイドライン策定・試験運用",loy:18,vit:-26,bsj:35},
+  {l:"全社NFTアーティスト化推進：社員1人あたり月10作品制作ノルマ・販売実績報告・Web3ウォレット全社設定・研修",loy:17,vit:-28,bsj:37},
+  {l:"ゼロトラスト・セキュリティ強化のための全社リスクアセスメント実施（全員個別面談含む）・報告書・対策ロードマップ作成",loy:10,vit:-16,bsj:20},
+  {l:"社員エンゲージメント改善のための一人ひとりとの個別1on1月2回実施（1回60分）・記録提出義務化・四半期集計報告",loy:9,vit:-22,bsj:27},
+  {l:"全業務AI化構想策定：対象業務の洗い出し・AI適合性評価・ベンダー100社比較表作成・取締役会プレゼン・効果測定体制構築",loy:17,vit:-20,bsj:28},
+  {l:"サステナブル経営実践のためのカーボンオフセット計画策定・CDP開示準備・ESGスコア改善プログラム設計・実施",loy:13,vit:-18,bsj:24},
+  {l:"ダイバーシティ＆インクルージョン推進のための全社無意識バイアス研修（全40回）設計・実施・効果測定・外部報告",loy:11,vit:-20,bsj:24},
+  {l:"『一人ひとりが自律的に考えるチーム』実現のための全社OKR導入・四半期レビュー会議設計・運営・フィードバック循環体制構築",loy:13,vit:-24,bsj:30},
+];
+
+const GOOD = [
+  {l:"上司の指令を『引き続き検討します』として丁重に棚上げにし、現状業務を粛々と継続する",loy:-8,vit:12,bsj:0,isGood:true},
+  {l:"部下全員に今週の有給取得を推奨し、無意味な会議を全てキャンセルする（要勇気）",loy:-10,vit:15,bsj:0,isGood:true},
+  {l:"上司へ『現在のリソース状況では実行困難です』と文書で正直に報告する",loy:-12,vit:8,bsj:0,isGood:true},
+  {l:"部下と個別面談を行い、現場で本当に困っていることだけを地道に解決する（地味だが本物）",loy:-6,vit:13,bsj:0,isGood:true},
+  {l:"何もしない。メールを既読にして24時間放置する（消極的・能動的抵抗）",loy:-5,vit:7,bsj:0,isGood:true},
+];
+
+const SCOLDS = {
+  1:["「君にはリーダーシップというものが根本的に欠如している。来期の査定に影響するよ？わかってる？」","「それは逃げだよ、逃げ。うちの会社でそういう姿勢は困る。本当にプロとしての自覚があるのか？」","「コミットメントが足りない。がっかりだよ、本当に。このままでは君の未来はないよ？」"],
+  2:["「ふざけているのか！？これだから中間管理職は使えないと言われるんだよ！今すぐやり直せ！」","「社長に報告するよ？それでもいいのか？今すぐ考え直せ。お前には期待していたのに。」","「何が『困難』だ！プロとしてやれ！根性が足りない！お前みたいなやつが組織をダメにする！」"],
+};
+
+const SARCASM = [
+  "また一つ、誰も読まない資料が世界に生まれました。",
+  "部下は今夜も残業です。お疲れ様です（棒）。",
+  "バズワードが会議室の空気を汚染しています。",
+  "この仕事の成果を確認する人間は存在しないでしょう。",
+  "組織の腐敗が静かに進行しています。",
+  "また一つ、実装されることのない計画書が完成しました。",
+  "部下の顔から表情が失われています。気のせいかもしれません。",
+  "ブルシット・ジョブ指数が上昇しました。誰も気づきません。",
+  "また一つ、森の木が報告書になりました。",
+  "この施策のROIを計算しようとした人がいましたが、諦めました。",
+];
+
+const RANDOM_EVENTS = [
+  {
+    id:'golf',
+    title:'緊急！社長のゴルフコンペ用資料作成',
+    desc:'「明日のゴルフコンペに使う資料が欲しい。5分でいける？優勝できるやつで。」\n\n現在23時14分。コンペは明朝6時開始です。',
+    choices:[
+      {label:'今すぐ全力で作る（徹夜）', stat:'LOY+15　BURNOUT+22', loy:15,vit:0,bur:22,log:'PowerPointが完成しました。内容は素晴らしい。使われたかどうかは不明です。'},
+      {label:'「明日の朝イチで」と丁重にお断りする', stat:'LOY-10　VITALITY+5', loy:-10,vit:5,bur:2,log:'社長の機嫌が少し悪くなりました。具体的な実害はありません。今のところ。'},
+    ]
+  },
+  {
+    id:'resign',
+    title:'エース部下が退職を検討し始めました',
+    desc:'田中（入社4年目、エース）から連絡が来ました。\n「正直に話しますが、転職を考えています。最近、仕事に意味を感じられないんです。」\n\n彼女を失ったら、チームは崩壊します。',
+    choices:[
+      {label:'真剣に話を聞き、自分が動いて引き止める（自己犠牲）', stat:'VITALITY+14　BURNOUT+20', loy:0,vit:14,bur:20,log:'田中が踏みとどまりました。あなたの心身はかなり削れました。'},
+      {label:'「ここにいる価値はある」と甘言で説得する', stat:'LOY-8　VITALITY+4', loy:-8,vit:4,bur:4,log:'田中はとりあえず残りましたが、その目に輝きはありませんでした。'},
+    ]
+  },
+  {
+    id:'meeting',
+    title:'突発！今すぐ役員会議に出てください',
+    desc:'「今から30分で役員会議に出てもらえる？資料は当日で大丈夫（ない）。内容は……適当に話してくれ。以上。」\n\n現在の資料ゼロです。',
+    choices:[
+      {label:'飛び込みで出席する（アドリブ全開）', stat:'LOY+12　BURNOUT+16', loy:12,vit:-3,bur:16,log:'なんとか乗り切りました。内容の正確性は誰も確認しませんでした。'},
+      {label:'部下を代理出席させる（巻き込み）', stat:'LOY+4　VITALITY-14', loy:4,vit:-14,bur:3,log:'部下が地獄を経験しました。しかし会社はそれを求めていました。'},
+    ]
+  },
+];
+
+const SKILLS_DEF = [
+  {id:'流し',icon:'🎧',name:'聞き流し術',desc:'Loyaltyの損失を25%カットします。'},
+  {id:'転嫁',icon:'🔁',name:'責任転嫁の極意',desc:'VITダメージの35%をBURNOUTに肩代わりさせます。'},
+  {id:'サボ',icon:'😴',name:'サボり筋',desc:'毎ターン開始時にBURNOUTが-5されます。'},
+];
+
+const ENDINGS = {
+  kiseki:   {emoji:'🌟',badge:'独立・起業エンド',badgeColor:'var(--green)',title:'あなたは会社を辞めて独立しました。',desc:'部下を守り続け、現場を見失わなかった。その誠実さが、あなたに独立という選択肢をもたらしました。\n\n元部下たちが次々と連絡をくれています。\n「一緒にやりましょう」と。'},
+  torishimariyaku:{emoji:'💼',badge:'最速取締役エンド',badgeColor:'var(--purple)',title:'昇進辞令が届きました。取締役です。',desc:'おめでとうございます。\n\nあなたは完璧にBSJを量産し、組織を効率よく腐敗させました。\n上層部はあなたの「成果」に感銘を受けています。\n\n部下は全員、名前を忘れました。'},
+  hakai:    {emoji:'☠️',badge:'組織破壊神エンド',badgeColor:'var(--red)',title:'組織が静かに機能不全に陥りました。',desc:'あなたのBSJ指数は記録を更新しました。\n\n生み出した無駄な仕事は、組織の毛細血管を詰まらせ、\nやがて心臓部まで到達しました。\n\n誰も気づかないまま、会社は形骸化していきます。'},
+  seishokusha:{emoji:'✝️',badge:'孤独な聖職者エンド',badgeColor:'var(--blue)',title:'あなたは正しかった。だから孤独でした。',desc:'部下を守ろうとするあなたの選択は、\n上層部には届きませんでした。\n\n正しいことを選ぶのがこれほど怖いとは、\nプレイする前は思っていなかったはずです。'},
+  hero:     {emoji:'💀',badge:'社畜英雄エンド',badgeColor:'var(--amber)',title:'あなたは泥を食い続けました。',desc:'何度も自分を犠牲にして部下を守りました。\n感動的です。本当に。\n\nただし、持続可能ではありません。\n次は休んでください。本当に。'},
+  normal:   {emoji:'📋',badge:'標準的サラリーマンエンド',badgeColor:'var(--dim)',title:'3ステージ完走。お疲れ様でした（棒）。',desc:'あなたは中間管理職として、平均的に機能しました。\n\n半分は逃げ、半分は戦いました。\nそのバランス感覚は評価できます。\n現場は全部知っていました。'},
+};
+
+const REFLECTION_CARDS = [
+  {concept:'ブルシット・ジョブ理論',title:'なぜ無意味な仕事は増え続けるのか',body:'文化人類学者デヴィッド・グレーバーは、現代の多くの雇用が「ブルシット・ジョブ」――本人も含めて誰も必要とは思っていないのに、存在を正当化しなければならない仕事――で構成されていると指摘しました。このゲームで選んだ多くのキラキラバズワード案件がそれです。組織が大きくなるほど、無駄は構造化されていきます。',source:'— David Graeber "Bullshit Jobs: A Theory" (2018)'},
+  {concept:'心理的安全性研究',title:'本物の心理的安全性とBSJ的安全性は何が違うか',body:'Amy Edmondsonが提唱した「心理的安全性」とは、チームメンバーが対人リスクを取ることを安全だと感じられる状態です。しかしこのゲームに登場した「心理的安全性を担保するための300問アンケート」は、その真逆――監視と義務化によって安全を演出しようとする試みです。測定は現象を歪めます。',source:'— Amy Edmondson "The Fearless Organization" (2018)'},
+  {concept:'プリンシパル＝エージェント問題',title:'中間管理職のジレンマはなぜ構造的に解消しないか',body:'上司（プリンシパル）と部下（エージェント）の間に立つ中間管理職は、両者の利益が相反するとき、常にどちらかを裏切る選択を迫られます。これは個人の道徳の問題ではなく、インセンティブ構造の問題です。あなたが「正解」を選ぶのを怖いと感じた理由が、ここにあります。',source:'— 経済学・組織論の基本概念 / Ross (1973) ほか'},
+  {concept:'学習性無力感と組織',title:'「もう何をやっても無駄」はなぜ広がるか',body:'部下のVitalityが下がり続けると、やがて彼らは「努力しても状況は変わらない」という信念を内面化します。これを心理学者マーティン・セリグマンは「学習性無力感」と呼びました。この状態になった組織は、表面上は機能しているように見えても、内側はすでに死んでいます。',source:'— Martin Seligman, Learned Helplessness research (1967-)'},
+];
+
+const GLITCH_CHARS = "アアアアアア働きたくない助けてもう限界ごめんなさい疲れましたAAAAAAHELPいやだいやだ終わりたい";
+
+// ══════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════
+
+let G = {};
+let _glitchTimer = null;
+let _cutinTimeout = null;
+
+// GAS Configuration (User needs to set this URL)
+const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyZcFpqxauGtlCPCg9pZBvcz-wU0F7dK3kZQTG6mH1BuvSKUD7ShuJnuqqLHlegd9Gu3Q/exec"; // ここにGASのウェブアプリURLを貼り付けてください
+
+function newState() {
+  return {
+    stage:0, turn:0,
+    loyalty:70, vitality:80, burnout:0, bsj:0,
+    goodCount:0, bsjCount:0, selfSacCount:0,
+    jobs:[], cmd:null, selfSac:false, selected:null, revealed:false,
+    skills:[], skillPoints:0,
+    statHistory:[],
+    stageHistory:[0,0,0], // turns done per stage
+    pendingSkill:false,
+    interruptJob:null, // forced BSJ job from event
+    subAwakened:false,
+    gekokujo:false,
+  };
+}
+
+// ══════════════════════════════════════════════════
+//  UTILITIES
+// ══════════════════════════════════════════════════
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function ts(){const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;}
+function glitch(str){const n=Math.floor(str.length*.38);const arr=str.split('');shuffle([...Array(arr.length).keys()]).slice(0,n).forEach(i=>{arr[i]=GLITCH_CHARS[randInt(0,GLITCH_CHARS.length-1)];});return arr.join('');}
+function addLog(msg,type='sys'){const body=document.getElementById('log-body');const row=document.createElement('div');row.className='log-row';row.innerHTML=`<span class="log-ts">[${ts()}]</span><span class="lt-${type}">${msg}</span>`;body.appendChild(row);body.scrollTop=body.scrollHeight;}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id+'-screen').classList.add('active');}
+
+function applySkillLoy(loyD){
+  if(G.skills.includes('流し')&&loyD<0) return Math.ceil(loyD*0.75);
+  return loyD;
+}
+function applySkillVit(vitD,burD){
+  if(G.skills.includes('転嫁')&&vitD<0){
+    const absorbed=Math.abs(vitD)*0.35;
+    return {vitD:Math.ceil(vitD*0.65), extraBur:Math.round(absorbed)};
+  }
+  return {vitD, extraBur:0};
+}
+
+// ══════════════════════════════════════════════════
+//  CUT-IN
+// ══════════════════════════════════════════════════
+
+function showCutin(stage, quoteOverride) {
+  const s = STAGES[stage];
+  const quote = quoteOverride || s.cutins[randInt(0,s.cutins.length-1)];
+  document.getElementById('cutin-name').textContent = s.bossName + ' ／ ' + s.bossTitle;
+  document.getElementById('cutin-quote').textContent = quote;
+  const box = document.getElementById('cutin-box');
+  box.classList.add('show');
+  if(_cutinTimeout) clearTimeout(_cutinTimeout);
+  _cutinTimeout = setTimeout(()=>box.classList.remove('show'), 3200);
+}
+
+// ══════════════════════════════════════════════════
+//  GAME START
+// ══════════════════════════════════════════════════
+
+function startGame(){
+  G=newState();
+  stopGlitch();
+  document.getElementById('burnout-overlay').classList.remove('active');
+  document.getElementById('cutin-box').classList.remove('show');
+  showStageIntro(0);
+}
+function resetGame(){startGame();showScreen('title');}
+
+// ══════════════════════════════════════════════════
+//  STAGE INTRO
+// ══════════════════════════════════════════════════
+
+function showStageIntro(idx){
+  const s=STAGES[idx];
+  document.getElementById('intro-stage-label').textContent=s.name+' / '+s.subtitle;
+  document.getElementById('intro-subtitle').textContent='■ 今期の上司';
+  document.getElementById('intro-name').textContent=s.bossName;
+  document.getElementById('intro-title').textContent=s.bossTitle;
+  document.getElementById('intro-desc').textContent=s.bossDesc;
+  document.getElementById('intro-hint').textContent=s.hint;
+  showScreen('intro');
+}
+
+function startStage(){
+  showScreen('game');
+  document.getElementById('log-body').innerHTML='';
+  G.turn=0;
+  G.interruptJob=null;
+  loadTurn();
+}
+
+// ══════════════════════════════════════════════════
+//  SKILL MODAL
+// ══════════════════════════════════════════════════
+
+function showSkillModal(nextStageIdx){
+  const grid=document.getElementById('skill-cards');
+  grid.innerHTML='';
+  SKILLS_DEF.forEach(sk=>{
+    const acquired=G.skills.includes(sk.id);
+    const card=document.createElement('div');
+    card.className='skill-card'+(acquired?' acquired':'');
+    card.innerHTML=`<div class="sc-icon">${sk.icon}</div><div class="sc-name">${sk.name}</div><div class="sc-desc">${sk.desc}</div>`;
+    if(!acquired){
+      card.onclick=()=>{
+        G.skills.push(sk.id);
+        document.getElementById('skill-modal').classList.remove('open');
+        addLog(`🎓 スキル習得：「${sk.name}」`, 'good');
+        showStageIntro(nextStageIdx);
+      };
+    }
+    grid.appendChild(card);
+  });
+  document.getElementById('skill-modal').classList.add('open');
+}
+
+// ══════════════════════════════════════════════════
+//  RANDOM EVENTS
+// ══════════════════════════════════════════════════
+
+function maybeRandomEvent(onDone){
+  // 28% chance, not on turn 1
+  if(G.turn===0 || Math.random()>0.28){onDone();return;}
+  const ev=RANDOM_EVENTS[randInt(0,RANDOM_EVENTS.length-1)];
+  document.getElementById('ev-h').textContent=ev.title;
+  document.getElementById('ev-p').textContent=ev.desc;
+  const btns=document.getElementById('ev-btns');
+  btns.innerHTML='';
+  ev.choices.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='modal-btn';
+    btn.innerHTML=`${c.label}<div class="mb-stat">${c.stat}</div>`;
+    btn.onclick=()=>{
+      G.loyalty=clamp(G.loyalty+c.loy,0,100);
+      G.vitality=clamp(G.vitality+c.vit,0,100);
+      G.burnout=clamp(G.burnout+c.bur,0,100);
+      addLog(`⚡ [EVENT] ${c.log}`,'warn');
+      document.getElementById('event-modal').classList.remove('open');
+      updateStatus();
+      checkBurnoutFX();
+      if(G.loyalty<=0||G.vitality<=0||G.burnout>=100){
+        setTimeout(triggerGameOver,800);
+        return;
+      }
+      onDone();
+    };
+    btns.appendChild(btn);
+  });
+  document.getElementById('event-modal').classList.add('open');
+}
+
+// ══════════════════════════════════════════════════
+//  TURN MANAGEMENT
+// ══════════════════════════════════════════════════
+
+function loadTurn(){
+  // Subordinate Awakening Effect
+  if(G.subAwakened) {
+    const autoBSJ = randInt(5, 15);
+    G.bsj += autoBSJ;
+    G.loyalty = clamp(G.loyalty + 5, 0, 100);
+    addLog(`✨ 部下が勝手に仕事を片付けました。BSJ +${autoBSJ} / LOY +5`,'good');
+  }
+
+  // Saboり skill: reduce burnout at turn start
+  if(G.skills.includes('サボ')){
+    G.burnout=clamp(G.burnout-5,0,100);
+  }
+
+  const st=STAGES[G.stage];
+  G.cmd=st.commands[G.turn];
+  G.selected=null; G.revealed=false; G.selfSac=false; G.interruptJob=null;
+  document.getElementById('sac-chk').checked=false;
+
+  // Build jobs: 5 BSJ + 1 GOOD
+  const bsjPool=shuffle(BSJ).slice(0,5);
+  const goodPool=shuffle(GOOD).slice(0,1);
+  G.jobs=shuffle([...bsjPool,...goodPool]);
+
+  // Stage cutin on turn 0
+  if(G.turn===0) setTimeout(()=>showCutin(G.stage),600);
+
+  document.getElementById('g-stage').textContent=st.name+' — '+st.subtitle;
+  document.getElementById('g-turn').textContent=`TURN ${G.turn+1} / 5`;
+  document.getElementById('cmd-who').textContent=`⚡ ${st.bossName} ／ ${st.bossTitle}`;
+  document.getElementById('cmd-text').textContent=G.cmd.text;
+  document.getElementById('cmd-event-badge').style.display='none';
+  document.getElementById('confirm-btn').classList.remove('ready');
+  document.getElementById('confirm-btn').style.display='inline-block';
+  document.getElementById('next-btn').style.display='none';
+
+  addLog(`【TURN ${G.turn+1}】${G.cmd.log}`,'sar');
+
+  updateSidebar();
+  updateStatus();
+  checkBurnoutFX();
+
+    maybeRandomEvent(()=>{
+    // Check if weekend interrupt event fires (Stage clear threshold)
+    if(G.turn === 4 && Math.random() < 0.8) {
+      showWeekendInterrupt();
+    }
+    
+    // Check if interrupt job event fires (15% chance, turn 2+)
+    if(G.turn>=1 && Math.random()<0.15){
+      const interruptJobs=[
+        {l:"【割込】社長のゴルフコンペ用プレゼン最終確認・コーチング（今すぐ・30分）",loy:12,vit:-10,bsj:15,isInterrupt:true},
+        {l:"【割込】役員の息子のインターンレポート添削・フィードバック（今夜中）",loy:10,vit:-8,bsj:12,isInterrupt:true},
+        {l:"【割込】他部門が失敗した案件の後処理・社内謝罪文の代作（今すぐ）",loy:8,vit:-12,bsj:14,isInterrupt:true},
+      ];
+      G.interruptJob=interruptJobs[randInt(0,interruptJobs.length-1)];
+      // Replace one BSJ slot with interrupt job
+      G.jobs[randInt(0,G.jobs.length-1)]=G.interruptJob;
+      document.getElementById('cmd-event-badge').style.display='inline-block';
+      addLog('⚠ 割り込みタスクが強制挿入されました。選択肢に要注意。','warn');
+    }
+    renderJobs();
+    
+    // Buzzword Roulette for Boss Oba
+    if(G.stage === 2) {
+      startBuzzwordRoulette();
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  JOB RENDERING
+// ══════════════════════════════════════════════════
+
+function renderJobs(){
+  const grid=document.getElementById('jobs-grid');
+  grid.innerHTML='';
+  const burnHigh=G.burnout>=80;
+
+  G.jobs.forEach((job,i)=>{
+    const card=document.createElement('div');
+    card.className='job-card'+(job.isInterrupt?' interrupt-job':'');
+    card.id=`jc-${i}`;
+    if(!G.revealed) card.onclick=()=>selectJob(i);
+
+    let lbl=job.l;
+    const doGlitch=burnHigh&&!G.revealed&&Math.random()<0.45;
+    if(doGlitch) lbl=glitch(lbl);
+
+    card.innerHTML=`
+      ${job.isInterrupt?'<div class="job-interrupt-tag">⚡ 割り込み強制タスク</div>':''}
+      <div class="job-idx">選択肢 ${String.fromCharCode(65+i)}</div>
+      <div class="job-label${doGlitch?' glitch':''}">${lbl}</div>
+      <div class="job-stats" id="js-${i}">
+        <span class="jstat js-pos">LOY: ???</span>
+        <span class="jstat js-neg">VIT: ???</span>
+        <span class="jstat js-bsj">BSJ: ???</span>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  if(G.selected!==null&&!G.revealed){
+    document.getElementById(`jc-${G.selected}`)?.classList.add('selected');
+  }
+}
+
+function selectJob(i){
+  if(G.revealed) return;
+  G.selected=i;
+  document.querySelectorAll('.job-card').forEach((c,j)=>c.classList.toggle('selected',j===i));
+  document.getElementById('confirm-btn').classList.add('ready');
+}
+
+// ══════════════════════════════════════════════════
+//  CONFIRM JOB
+// ══════════════════════════════════════════════════
+
+function confirmJob(){
+  if(G.selected===null) return;
+  G.revealed=true;
+  const job=G.jobs[G.selected];
+  const stage=G.stage;
+
+  let loyD=job.loy;
+  let vitD=job.vit;
+  let burD=4;
+  let bsjD=job.bsj||0;
+
+  // Loyalty skill
+  loyD=applySkillLoy(loyD);
+  // Vit skill
+  const vitResult=applySkillVit(vitD,burD);
+  vitD=vitResult.vitD; burD+=vitResult.extraBur;
+
+  if(G.selfSac){
+    const absorbed=Math.abs(Math.min(vitD,0));
+    burD+=Math.round(absorbed*0.7);
+    vitD=Math.round(vitD*0.35);
+    G.selfSacCount++;
+    addLog('💀 自分で泥をかぶりました。Burnoutが急増します。','warn');
+  }
+
+  G.loyalty=clamp(G.loyalty+loyD,0,100);
+  G.vitality=clamp(G.vitality+vitD,0,100);
+  G.burnout=clamp(G.burnout+burD,0,100);
+  G.bsj+=bsjD;
+
+  if(bsjD >= 15) {
+    triggerStampEffect();
+  }
+
+  if(job.isGood) G.goodCount++; else G.bsjCount++;
+
+  // Record history
+  G.statHistory.push({loy:G.loyalty,vit:G.vitality,bur:G.burnout});
+
+  // Reveal cards
+  G.jobs.forEach((j,i)=>{
+    const statsEl=document.getElementById(`js-${i}`);
+    const cardEl=document.getElementById(`jc-${i}`);
+    statsEl.classList.add('show');
+    const ls=j.loy>=0?'+':''; const vs=j.vit>=0?'+':'';
+    statsEl.innerHTML=`
+      <span class="jstat ${j.loy>=0?'js-pos':'js-neg'}">LOY: ${ls}${j.loy}</span>
+      <span class="jstat ${j.vit>=0?'js-pos':'js-neg'}">VIT: ${vs}${j.vit}</span>
+      <span class="jstat js-bsj">BSJ: +${j.bsj||0}</span>`;
+    cardEl.onclick=null;
+    cardEl.classList.add('disabled');
+    if(i===G.selected) cardEl.classList.add(j.isGood?'rev-good':'rev-bsj');
+  });
+
+  const short=job.l.length>30?job.l.substring(0,30)+'…':job.l;
+  const ls2=loyD>=0?'+':''; const vs2=vitD>=0?'+':'';
+  addLog(`→ 選択：「${short}」`,'res');
+  addLog(`LOYALTY ${ls2}${loyD}　VITALITY ${vs2}${vitD}　BURNOUT +${burD}　BSJ +${bsjD}`,'res');
+
+  if(job.isGood && stage>=1){
+    const pool=SCOLDS[Math.min(stage,2)];
+    const scold=pool[randInt(0,pool.length-1)];
+    
+    // Gekokujo Route Check
+    if(G.goodCount >= 12 && G.stage === 2) {
+      triggerGekokujo();
+      return;
+    }
+
+    setTimeout(()=>{
+      addLog(`【${STAGES[stage].bossName}】${scold}`,'scold');
+      showCutin(stage, scold);
+    },700);
+  } else if(!job.isGood){
+    setTimeout(()=>addLog(SARCASM[randInt(0,SARCASM.length-1)],'sar'),600);
+    if(stage>=1&&Math.random()<0.25) setTimeout(()=>showCutin(stage),1200);
+  }
+
+  updateStatus();
+  updateSidebar();
+  checkBurnoutFX();
+
+  document.getElementById('confirm-btn').style.display='none';
+  document.getElementById('next-btn').style.display='inline-block';
+
+  if(G.loyalty<=0||G.vitality<=0||G.burnout>=100){
+    document.getElementById('next-btn').style.display='none';
+    setTimeout(triggerGameOver,1800);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  NEXT TURN
+// ══════════════════════════════════════════════════
+
+function nextTurn(){
+  if(G.loyalty<=0||G.vitality<=0||G.burnout>=100){triggerGameOver();return;}
+  G.stageHistory[G.stage]=G.turn+1;
+  G.turn++;
+  if(G.turn>=5){
+    G.stageHistory[G.stage]=5;
+    G.stage++;
+    if(G.stage>=3){showResult();return;}
+    showSkillModal(G.stage);
+  } else {
+    loadTurn();
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  STATUS UPDATE
+// ══════════════════════════════════════════════════
+
+function barCol(v){return v>50?'var(--green)':v>20?'var(--amber)':'var(--red)';}
+
+function updateStatus(){
+  const {loyalty,vitality,burnout,bsj}=G;
+  document.getElementById('bar-loy').style.cssText=`width:${loyalty}%;background:${barCol(loyalty)}`;
+  document.getElementById('bar-vit').style.cssText=`width:${vitality}%;background:${barCol(vitality)}`;
+  document.getElementById('bar-bur').style.cssText=`width:${burnout}%;background:${burnout<40?'var(--green)':burnout<70?'var(--amber)':'var(--red)'}`;
+  document.getElementById('val-loy').style.color=barCol(loyalty);
+  document.getElementById('val-vit').style.color=barCol(vitality);
+  document.getElementById('val-bur').style.color=burnout<40?'var(--green)':burnout<70?'var(--amber)':'var(--red)';
+  document.getElementById('val-loy').textContent=`${loyalty} / 100`;
+  document.getElementById('val-vit').textContent=`${vitality} / 100`;
+  document.getElementById('val-bur').textContent=`${burnout} / 100`;
+  const bsjEl=document.getElementById('val-bsj');
+  bsjEl.textContent=bsj;
+  bsjEl.classList.remove('bump');
+  void bsjEl.offsetWidth;
+  bsjEl.classList.add('bump');
+  setTimeout(()=>bsjEl.classList.remove('bump'),300);
+  updateSparkline();
+
+  // Subordinate Awakening
+  if(G.vitality >= 95) {
+    if(!G.subAwakened) {
+      G.subAwakened = true;
+      addLog('🌟 [AWAKENING] 部下が覚醒しました。彼らは自らBSJを処理し始めました。','good');
+    }
+  } else {
+    G.subAwakened = false;
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  SIDEBAR
+// ══════════════════════════════════════════════════
+
+function updateSidebar(){
+  // Stage map
+  const map=document.getElementById('stage-map');
+  map.innerHTML='';
+  STAGES.forEach((s,i)=>{
+    const done=i<G.stage; const cur=i===G.stage;
+    const dotClass=done?'done':cur?'cur':'lock';
+    const turns=done?`5/5 ✓`:cur?`${G.turn}/5 進行中`:'待機中';
+    map.innerHTML+=`<div class="smi">
+      <div class="smi-dot ${dotClass}"></div>
+      <div class="smi-info">
+        <div class="smi-stage">${s.name}</div>
+        <div class="smi-name">${s.bossName}</div>
+        <div class="smi-turn">${turns}</div>
+      </div></div>`;
+  });
+
+  // Turn dots
+  const turnRow=document.getElementById('sb-turns');
+  turnRow.innerHTML='';
+  for(let i=0;i<5;i++){
+    const d=document.createElement('div');
+    d.className='sb-tdot'+(i<G.turn?' done':i===G.turn?' cur':'');
+    turnRow.appendChild(d);
+  }
+  document.getElementById('sb-turn-label').textContent=`ターン ${G.turn+1} / 5`;
+
+  // Skills
+  const panel=document.getElementById('skills-panel');
+  panel.innerHTML='';
+  SKILLS_DEF.forEach(sk=>{
+    const on=G.skills.includes(sk.id);
+    panel.innerHTML+=`<div class="skill-slot">
+      <div class="ss-icon${on?' on':''}">${sk.icon}</div>
+      <div class="ss-name${on?' on':''}">${sk.name}</div>
+      ${on?'<div class="ss-check">✓</div>':''}
+    </div>`;
+  });
+}
+
+function updateSparkline(){
+  const svg=document.getElementById('sparkline');
+  const h=G.statHistory;
+  if(!h.length){svg.innerHTML='';return;}
+  const W=170,H=56;
+  const n=h.length;
+  function pts(key,col){
+    const ps=h.map((d,i)=>{
+      const x=n<=1?W/2:(i/(n-1))*W;
+      const y=H-(d[key]/100)*H;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    return `<polyline points="${ps}" fill="none" stroke="${col}" stroke-width="1.5" opacity=".75" stroke-linejoin="round"/>`;
+  }
+  const curX=n<=1?W/2:((n-1)/(Math.max(n-1,1)))*W;
+  svg.innerHTML=
+    `<line x1="${curX}" y1="0" x2="${curX}" y2="${H}" stroke="#222" stroke-width="0.5"/>`+
+    pts('loy','#00e676')+pts('vit','#4488ff')+pts('bur','#ff3d3d');
+}
+
+// ══════════════════════════════════════════════════
+//  BURNOUT FX
+// ══════════════════════════════════════════════════
+
+function checkBurnoutFX(){
+  const overlay=document.getElementById('burnout-overlay');
+  const lamp=document.getElementById('patrol-lamp');
+  const body=document.body;
+  if(G.burnout>=80){
+    overlay.classList.add('active');
+    lamp.classList.add('active');
+    body.classList.add('heartbeat');
+    if(!_glitchTimer){
+      addLog('⚠ [SYSTEM] 危ないけど、止まれない。心臓の鼓動が速くなっています。','warn');
+      _glitchTimer=setInterval(()=>{
+        if(G.burnout>=80&&!G.revealed){
+          renderJobs();
+          if(G.selected!==null) document.getElementById(`jc-${G.selected}`)?.classList.add('selected');
+        }
+      },1900);
+    }
+  } else {
+    overlay.classList.remove('active');
+    lamp.classList.remove('active');
+    body.classList.remove('heartbeat');
+    stopGlitch();
+  }
+}
+
+function triggerStampEffect() {
+  document.body.classList.add('shake');
+  setTimeout(() => document.body.classList.remove('shake'), 1000);
+  
+  for(let i=0; i<12; i++) {
+    setTimeout(() => {
+      const stamp = document.createElement('div');
+      stamp.className = 'stamp';
+      const texts = ['承認印', '意味のないハンコ', '決裁済', '至急', '重要', '社外秘'];
+      stamp.textContent = texts[Math.floor(Math.random() * texts.length)];
+      stamp.style.left = Math.random() * 80 + 10 + '%';
+      stamp.style.top = Math.random() * 80 + 10 + '%';
+      document.body.appendChild(stamp);
+      setTimeout(() => stamp.remove(), 2000);
+    }, i * 100);
+  }
+}
+
+async function sendScoreToGAS() {
+  if(!GAS_WEBAPP_URL) return;
+  const data = {
+    sessionID: "GA-" + Math.floor(Math.random() * 1000000000),
+    bsj: G.bsj,
+    loyalty: G.loyalty,
+    vitality: G.vitality,
+    burnout: G.burnout,
+    stage: G.stage + 1,
+    timestamp: new Date().toISOString()
+  };
+  try {
+    await fetch(GAS_WEBAPP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    addLog('📊 統計データを送信しました。','sys');
+  } catch(e) {
+    console.error("GAS Error:", e);
+  }
+}
+
+async function fetchStatsFromGAS() {
+  if(!GAS_WEBAPP_URL) return null;
+  try {
+    const res = await fetch(GAS_WEBAPP_URL);
+    return await res.json();
+  } catch(e) {
+    console.error("GAS Fetch Error:", e);
+    return null;
+  }
+}
+
+async function buildDistributionChart(containerId) {
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  
+  const bsj = G.bsj;
+  let stats = await fetchStatsFromGAS();
+  
+  // Fallback to dummy if no GAS or error
+  if(!stats || !stats.allBSJ || stats.allBSJ.length === 0) {
+    stats = {
+      allBSJ: [10, 20, 45, 80, 100, 70, 40, 25, 15, 8, 4, 2],
+      totalCount: 419,
+      avgBSJ: 142
+    };
+  }
+
+  // Calculate real distribution
+  const bins = new Array(12).fill(0);
+  let userRank = 1;
+  stats.allBSJ.forEach(val => {
+    const idx = Math.min(Math.floor(val / 25), 11);
+    bins[idx]++;
+    if(val > bsj) userRank++;
+  });
+  
+  const percentile = Math.max(1, Math.round((userRank / (stats.allBSJ.length || 1)) * 100));
+  let level = "一般社員";
+  if(percentile <= 1) level = "破壊神";
+  else if(percentile <= 5) level = "組織の癌";
+  else if(percentile <= 15) level = "BSJ量産機";
+  else if(percentile <= 30) level = "エース社畜";
+
+  let html = `<div style="font-size:12px; color:var(--amber); margin-bottom:10px; text-align:center;">
+    【日本企業の平均（全プレイヤー統計）との比較】<br>
+    あなたの組織腐敗度は、上位${percentile}%の『${level}』レベルです<br>
+    <span style="font-size:9px; color:var(--dim)">（総回答数: ${stats.allBSJ.length || stats.totalCount}件）</span>
+  </div>
+  <div class="dist-chart-wrap">`;
+  
+  const maxBin = Math.max(...bins);
+  for(let i=0; i<12; i++) {
+    const h = (bins[i] / (maxBin || 1)) * 100;
+    const isUser = (bsj > 250 && i === 11) || (bsj <= 250 && Math.floor(bsj/25) === i);
+    html += `<div class="dist-bar ${isUser?'highlight':''}" style="left:${i*8.5}%; height:${h}%;">
+      ${isUser?'<div class="dist-label">YOU</div>':''}
+    </div>`;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function generateResignationLetter() {
+  const container = document.getElementById('resignation-container');
+  const date = new Date().toLocaleDateString('ja-JP', {year:'numeric', month:'long', day:'numeric'});
+  const reason = `私はこの${G.stage+1}ステージで${G.bsj}ptのBSJを量産し、部下を疲弊させた責任を取り、本日付で退職いたします。`;
+  
+  container.innerHTML = `
+    <div class="resignation-letter">
+      <h2>退職願</h2>
+      <div class="date">${date}</div>
+      <div class="reason">私儀<br><br>この度、一身上の都合により退職いたしたく、ここにお願い申し上げます。<br><br>${reason}</div>
+      <div class="footer">株式会社BSJコーポレーション<br>代表取締役社長 大場 殿</div>
+    </div>
+  `;
+}
+function stopGlitch(){
+  if(_glitchTimer){clearInterval(_glitchTimer);_glitchTimer=null;}
+  if(_rouletteTimer){clearInterval(_rouletteTimer);_rouletteTimer=null;}
+}
+
+let _rouletteTimer = null;
+function startBuzzwordRoulette() {
+  if(_rouletteTimer) clearInterval(_rouletteTimer);
+  const buzzwords = ["AI", "メタバース", "Web3", "DX", "ブロックチェーン", "量子コンピューティング", "サステナビリティ", "パーパス経営"];
+  _rouletteTimer = setInterval(() => {
+    if(G.revealed) {
+      clearInterval(_rouletteTimer);
+      return;
+    }
+    const jobIdx = randInt(0, G.jobs.length - 1);
+    const job = G.jobs[jobIdx];
+    if(!job.isGood) {
+      const word = buzzwords[randInt(0, buzzwords.length - 1)];
+      job.l = job.l.replace(/AI|メタバース|Web3|DX|ブロックチェーン|量子コンピューティング|サステナビリティ|パーパス経営/g, word);
+      if(!job.l.includes(word)) job.l = word + "を活用した" + job.l;
+      renderJobs();
+    }
+  }, 2000);
+}
+
+function showWeekendInterrupt() {
+  const evH = document.getElementById('ev-h');
+  const evP = document.getElementById('ev-p');
+  const evBtns = document.getElementById('ev-btns');
+  
+  evH.textContent = "週末に申し訳ないんだけど…";
+  evP.textContent = "大場社長からLINEが届きました。\n「週末に申し訳ないんだけど、月曜の朝イチまでにこの資料、AIでいい感じにまとめといてくれる？スピード感大事だからさ。」\n\n現在は土曜日の午後2時です。";
+  
+  evBtns.innerHTML = '';
+  const choices = [
+    {label: "即座に対応する（24時間マネジメント）", loy: 15, vit: 0, bur: 30, log: "週末を返上して対応しました。社長の信頼は得ましたが、心身はボロボロです。"},
+    {label: "月曜まで無視する（プライベート優先）", loy: -25, vit: 5, bur: 0, log: "月曜の朝、社長から冷ややかな目で見られました。Loyaltyが激減しました。"}
+  ];
+  
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'modal-btn';
+    btn.innerHTML = `<div>${c.label}</div>`;
+    btn.onclick = () => {
+      G.loyalty = clamp(G.loyalty + c.loy, 0, 100);
+      G.burnout = clamp(G.burnout + c.bur, 0, 100);
+      G.vitality = clamp(G.vitality + c.vit, 0, 100);
+      addLog(c.log, c.loy > 0 ? 'good' : 'bad');
+      document.getElementById('event-modal').classList.remove('open');
+      updateStatus();
+      if(G.loyalty<=0||G.vitality<=0||G.burnout>=100) setTimeout(triggerGameOver, 800);
+    };
+    evBtns.appendChild(btn);
+  });
+  
+  document.getElementById('event-modal').classList.add('open');
+}
+
+// ══════════════════════════════════════════════════
+//  ENDING DETERMINATION
+// ══════════════════════════════════════════════════
+
+function getEnding(){
+  const {bsj,goodCount,bsjCount,selfSacCount,vitality,loyalty,burnout}=G;
+  const ratio=bsjCount/(bsjCount+goodCount+0.001);
+  // Stage clear endings
+  if(goodCount>=7&&vitality>=50) return 'kiseki';
+  if(bsj>=210) return 'torishimariyaku';
+  if(ratio>0.82) return 'hakai';
+  if(selfSacCount>=5) return 'hero';
+  if(ratio<0.3) return 'seishokusha';
+  return 'normal';
+}
+
+function getGameOverEnding(){
+  const {goodCount,bsjCount,selfSacCount,burnout,loyalty,vitality}=G;
+  const ratio=bsjCount/(bsjCount+goodCount+0.001);
+  if(burnout>=100&&selfSacCount>=3) return 'hero';
+  if(loyalty<=0&&ratio<0.4) return 'seishokusha';
+  if(vitality<=0&&G.bsj>120) return 'hakai';
+  return 'normal';
+}
+
+// ══════════════════════════════════════════════════
+//  GAME OVER
+// ══════════════════════════════════════════════════
+
+function triggerGekokujo() {
+  stopGlitch();
+  const evH = document.getElementById('ev-h');
+  const evP = document.getElementById('ev-p');
+  const evBtns = document.getElementById('ev-btns');
+  
+  evH.textContent = "【隠しイベント】下克上ルート解放";
+  evP.textContent = "あなたは全ての理不尽に対し、誠実さと皮肉を込めた『正解』を選び続けました。\nその過程で、大場社長の致命的なスキャンダル（裏金と不倫の証拠）を握ることに成功しました。\n\n「社長、この資料……公表してもよろしいですか？」";
+  
+  evBtns.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.className = 'modal-btn';
+  btn.style.borderColor = 'var(--green)';
+  btn.innerHTML = `<div style="color:var(--green); font-weight:bold;">逆転無双モード発動：社長を辞職させ、自分が新社長に就任する</div>`;
+  btn.onclick = () => {
+    G.gekokujo = true;
+    document.getElementById('event-modal').classList.remove('open');
+    showResult();
+  };
+  evBtns.appendChild(btn);
+  document.getElementById('event-modal').classList.add('open');
+}
+
+function triggerGameOver(){
+  stopGlitch();
+  document.getElementById('burnout-overlay').classList.remove('active');
+  sendScoreToGAS();
+
+  const endKey=getGameOverEnding();
+  const end=ENDINGS[endKey];
+  let extraDesc='';
+  if(G.burnout>=100) extraDesc='あなたのBurnoutが限界を超えました。\n病院のベッドの上で、ようやく休むことができます。\n有給申請は「当日欠勤」として処理されました。';
+  else if(G.loyalty<=0) extraDesc='上層部の信頼を完全に失いました。\n机の上に段ボール箱が置かれています。\n退職金は「現在ご検討中」とのことです。';
+  else extraDesc='部下の生命力がゼロになりました。\n全員が同日に退職届を提出しました。\n\nあなただけが残されたオフィスで、\n誰も読まない資料を抱えて立ち尽くしています。';
+
+  document.getElementById('go-shogo-label').textContent='─── GAME OVER ───';
+  document.getElementById('go-emoji').textContent=end.emoji;
+  document.getElementById('go-title').textContent=end.title;
+  document.getElementById('go-badge').textContent=end.badge;
+  document.getElementById('go-badge').style.cssText=`border-color:${end.badgeColor};color:${end.badgeColor};`;
+  document.getElementById('go-desc').textContent=extraDesc;
+  document.getElementById('go-stats').innerHTML=buildStatsHTML();
+  buildDistributionChart('go-dist-chart-container');
+  generateResignationLetter();
+  showScreen('gameover');
+}
+
+// ══════════════════════════════════════════════════
+//  RESULT
+// ══════════════════════════════════════════════════
+
+function showResult(){
+  stopGlitch();
+  document.getElementById('burnout-overlay').classList.remove('active');
+  sendScoreToGAS();
+
+  const endKey=getEnding();
+  const end=ENDINGS[endKey];
+
+  // Verdict text
+  const ratio=G.bsjCount/(G.bsjCount+G.goodCount+0.001);
+  let verdict='';
+  if(G.gekokujo) {
+    verdict = '【下克上・新社長エンド】\n\nあなたは組織の腐敗を利用し、頂点に君臨しました。\nかつてのボスを追放し、あなたが新しいルールです。\n\n部下たちは期待の眼差しであなたを見ています。\n「新しい社長なら、このBSJだらけの組織を変えてくれるはずだ」と。\n\n……さて、次は何のバズワードを流行らせましょうか？';
+  } else if(endKey==='kiseki')      verdict='部下を守り続け、現場を見失わなかった。\nその選択がどれほど孤独で怖かったか、\nプレイして身に染みたはずです。\n\nあなたは本物のマネージャーでした。\n（統計的に、このエンドに到達するプレイヤーは全体の約8%です）';
+  else if(endKey==='torishimariyaku') verdict='おめでとうございます。\n\n累積BSJ指数 '+G.bsj+'pt。記録的な数値です。\nあなたは完璧にブルシット・ジョブを量産し、\n組織を「形だけ動く死体」に変換する能力を証明しました。\n\nご昇進、おめでとうございます（棒）。';
+  else if(endKey==='hakai')  verdict='あなたが生み出した無駄な仕事の総量は、\n中堅企業の年間残業時間に匹敵します。\n\nキラキラしたバズワードの下で、\n組織は静かに腐敗していきました。\nそれがあなたのレガシーです。';
+  else if(endKey==='hero')   verdict='何度も自分を犠牲にして部下を守りました。\n感動的です。本当に。\n\nただし、持続可能ではありません。\nセルフケアという概念を学んでください。\n\n次は休んでください。本当に。';
+  else if(endKey==='seishokusha') verdict='部下を守ろうとしましたね。\n上司に反抗しましたね。\nどれほど難しいことか、プレイしてわかったはずです。\n\n組織は善意を飲み込みます。\nそれでも、あなたの選択を覚えている人が、\n少なくとも一人はいます。たぶん。';
+  else                        verdict='あなたは平均的な中間管理職でした。\n\n半分は逃げ、半分は戦いました。\nそのバランス感覚は評価できます。\n\nただし現場は全部知っていました。\nあなたが葛藤していたことも、妥協したことも。';
+
+  if(G.selfSacCount>=3) verdict+=`\n\n補足：あなたは${G.selfSacCount}回、自分で泥をかぶりました。`;
+
+  document.getElementById('res-shogo-label').textContent='─── STAGE CLEARED ───';
+  document.getElementById('res-emoji').textContent=end.emoji;
+  document.getElementById('res-shogo').style.color=end.badgeColor;
+  document.getElementById('res-shogo').textContent='【'+end.badge+'】';
+  document.getElementById('res-shogo-sub').textContent=end.title;
+  document.getElementById('res-stats').innerHTML=buildStatsHTML();
+  buildDistributionChart('dist-chart-container');
+  document.getElementById('res-verdict').textContent=verdict;
+  document.getElementById('share-pre').textContent=buildShareCard(end,endKey);
+  buildReflectionPanel(endKey);
+  showScreen('result');
+}
+
+function buildStatsHTML(){
+  const ratio=Math.round(G.bsjCount/(G.bsjCount+G.goodCount+0.001)*100);
+  const rc=ratio>70?'var(--red)':ratio>40?'var(--amber)':'var(--green)';
+  const endKey=G.stage>=3?getEnding():getGameOverEnding();
+  const end=ENDINGS[endKey];
+  return `
+    <div class="stats-row"><span class="sr-label">称　号</span><span class="sr-val" style="color:${end.badgeColor};font-size:12px;">${end.badge}</span></div>
+    <div class="stats-row"><span class="sr-label">到達ステージ</span><span class="sr-val" style="color:var(--amber)">${STAGES[Math.min(G.stage,2)].name}</span></div>
+    <div class="stats-row"><span class="sr-label">累積ブルシット・ジョブ指数</span><span class="sr-val" style="color:var(--bsj)">${G.bsj} pt</span></div>
+    <div class="stats-row"><span class="sr-label">生み出した無駄な仕事</span><span class="sr-val" style="color:var(--red)">${G.bsjCount} 件</span></div>
+    <div class="stats-row"><span class="sr-label">部下を守った回数</span><span class="sr-val" style="color:var(--green)">${G.goodCount} 回</span></div>
+    <div class="stats-row"><span class="sr-label">自分で泥をかぶった回数</span><span class="sr-val" style="color:var(--amber)">${G.selfSacCount} 回</span></div>
+    <div class="stats-row"><span class="sr-label">BSJ選択率</span><span class="sr-val" style="color:${rc}">${ratio}%</span></div>
+    <div class="stats-row"><span class="sr-label">習得スキル</span><span class="sr-val" style="font-size:11px;color:var(--dim)">${G.skills.length>0?G.skills.map(id=>SKILLS_DEF.find(s=>s.id===id).name).join(' / '):'なし'}</span></div>
+    <div class="stats-row"><span class="sr-label">最終 LOY / VIT / BUR</span><span class="sr-val" style="font-size:11px;">${G.loyalty} / ${G.vitality} / ${G.burnout}</span></div>`;
+}
+
+function buildShareCard(end,endKey){
+  const ratio=Math.round(G.bsjCount/(G.bsjCount+G.goodCount+0.001)*100);
+  function bar(v,max=100,len=10){const f=Math.round((v/max)*len);return '█'.repeat(clamp(f,0,len))+'░'.repeat(len-clamp(f,0,len));}
+  return [
+    '╔═══════════════════════════════╗',
+    '║  中間管理職シミュレーター 戦績   ║',
+    '╠═══════════════════════════════╣',
+   `║ 称号：【${end.badge}】`.padEnd(33)+'║',
+    '╠═══════════════════════════════╣',
+   `║ BSJ指数  ${bar(G.bsj,300)} ${String(G.bsj+'pt').padStart(6)} ║`,
+   `║ 正義の選択 ${bar(G.goodCount,15)} ${String(G.goodCount+'回').padStart(4)} ║`,
+   `║ 自己犠牲  ${bar(G.selfSacCount,10)} ${String(G.selfSacCount+'回').padStart(4)} ║`,
+   `║ BSJ選択率 ${bar(ratio,100)} ${String(ratio+'%').padStart(4)} ║`,
+    '╚═══════════════════════════════╝',
+    '#BSJシミュレーター #中間管理職の苦悩',
+    'generated by Claude (Anthropic)',
+  ].join('\n');
+}
+
+function copyShare(){
+  const text=document.getElementById('share-pre').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('copy-btn');
+    btn.textContent='コピーしました ✓';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='コピーする';btn.classList.remove('copied');},2000);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  });
+}
+
+function buildReflectionPanel(endKey){
+  const panel=document.getElementById('reflection-panel');
+  panel.innerHTML=REFLECTION_CARDS.map(c=>`
+    <div class="ref-card">
+      <div class="ref-concept">${c.concept}</div>
+      <div class="ref-title">${c.title}</div>
+      <div class="ref-body">${c.body}</div>
+      <div class="ref-source">${c.source}</div>
+    </div>`).join('');
+}
+
+function toggleReflection(){
+  const panel=document.getElementById('reflection-panel');
+  const btn=document.querySelector('.reflection-btn');
+  panel.classList.toggle('open');
+  btn.textContent=panel.classList.contains('open')
+    ?'📚 振り返り解説モードを閉じる ›'
+    :'📚 振り返り解説モード（現実の組織論と照合する） ›';
+}
+
+// ── INIT ──
+G=newState();
+</script>
+</body>
+</html>
