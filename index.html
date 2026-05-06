@@ -378,8 +378,18 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   frameborder="0" 
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
 　　</iframe>
-  </div><P><P>
+  </div>
+  /* 動画コンテナの下に余裕を持たせる */
+.yt-container {
+    margin-bottom: 30px; /* ここの数値を大きくすると隙間が広がります */
+    display: block;      /* 確実にブロックとして扱う */
+}
 
+/* タイトルの上にも少し余白を追加 */
+.title-h1 {
+    margin-top: 20px;
+    line-height: 1.4;    /* 文字が重ならないように行間も調整 */
+}
   <h1 class="title-h1">ブルシットジョブ シミュレーター</h1>
   <div class="title-sub">MIDDLE MANAGEMENT EXPERIENCE — AUTHENTIC SUFFERING GUARANTEED</div>
   <p class="title-desc">
