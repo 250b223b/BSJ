@@ -1603,7 +1603,7 @@ function triggerStampEffect() {
     setTimeout(() => {
       const stamp = document.createElement('div');
       stamp.className = 'stamp';
-      const texts = ['承認印', '意味のないハンコ', '決裁済', '至急', '重要', '社外秘'];
+      const texts = ['承認印', '合議（見てないけど）', '決裁済', '至急', '重要', '社外秘'];
       stamp.textContent = texts[Math.floor(Math.random() * texts.length)];
       stamp.style.left = Math.random() * 80 + 10 + '%';
       stamp.style.top = Math.random() * 80 + 10 + '%';
@@ -1719,7 +1719,7 @@ async function buildDistributionChart(containerId) {
 function generateResignationLetter() {
   const container = document.getElementById('resignation-container');
   const date = new Date().toLocaleDateString('ja-JP', {year:'numeric', month:'long', day:'numeric'});
-  const reason = `私はこの${G.stage+1}ステージで${G.bsj}ptのBSJを量産し、部下を疲弊させた責任を取り、本日付で退職いたします。`;
+  const reason = `私はこの${G.stage+1}ステージで${G.bsj}ptのブルシットジョブを量産し、部下を疲弊させた責任を取り、本日付で退職いたします。`;
   
   container.innerHTML = `
     <div class="resignation-letter">
